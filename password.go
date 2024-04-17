@@ -2,10 +2,10 @@ package main
 
 import (
 	"crypto/rand"
+	"flag"
 	"fmt"
 	"math/big"
 	"os"
-	"strconv"
 )
 const (
 	lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz"
@@ -24,8 +24,7 @@ func secureRandom(max *big.Int) int {
 
 func passwordGenerator(length int, withUpperCase, withSymbols, withNumbers bool) string {
 	var characters string
-	characters = lowerCaseLetters
-
+	
 	if withUpperCase {
 		characters += upperCaseLetters
 	}
@@ -38,6 +37,12 @@ func passwordGenerator(length int, withUpperCase, withSymbols, withNumbers bool)
 		characters += numbers
 	}
 
+    if withNumbers && !withUpperCase && !withSymbols {   //for pin
+        characters = numbers
+    } else {
+        characters += lowerCaseLetters
+    }
+
     characterLength := big.NewInt(int64(len(characters)))
     password:= make([]byte,length)
     for i := range password {
@@ -47,37 +52,64 @@ func passwordGenerator(length int, withUpperCase, withSymbols, withNumbers bool)
 }
 
 func main() {
-    args := os.Args[1:]
-    var length int
-    var hasUppercase, hasSymbols, hasNumbers bool
+	var passwordType string
+	flag.StringVar(&passwordType, "type", "random", "Type of password to generate: random, alphanumeric, pin")
 
-    for i := 0; i < len(args); i++ {
-        switch args[i] {
-        case "length":
-            if i+1 < len(args) {
-                l, err := strconv.Atoi(args[i+1])
-                if err != nil {
-                    fmt.Println("Invalid length")
-                    return
-                }
-                length = l
-            }
-        case "uppercase":
-            hasUppercase = true
-        case "symbols":
-            hasSymbols = true
-        case "numbers":
-            hasNumbers = true
+	var length int
+	flag.IntVar(&length, "length", 0, "Length of the password")
+
+	var hasUppercase, hasSymbols, hasNumbers bool
+	flag.BoolVar(&hasUppercase, "hasUppercase", false, "Include uppercase letters")
+	flag.BoolVar(&hasSymbols, "hasSymbols", false, "Include symbols")
+	flag.BoolVar(&hasNumbers, "hasNumbers", false, "Include numbers")
+
+	flag.Parse()
+
+
+	switch passwordType {
+	case "random":
+        if !hasUppercase && !hasSymbols && !hasNumbers { // Randomly decide whether to include uppercase, symbols, or numbers if non selected
+			hasUppercase = secureRandom(big.NewInt(2)) == 1
+			hasSymbols = secureRandom(big.NewInt(2)) == 1
+			hasNumbers = secureRandom(big.NewInt(2)) == 1
         }
-    }
-    if length == 0 {
-        length = 12 
-    }
+        if length == 0 {
+			length = 12 
+		}
+	case "alphanumeric":
+		hasUppercase = true
+		hasSymbols = false
+		hasNumbers = true
+        if length == 0 {
+			length = 12 
+		}
+	case "pin":
+		if length == 0 {
+			length = 6 
+		}
+		hasNumbers = true
+	default:
+		fmt.Println("Invalid password type. Type of password to generate: random, alphanumeric, pin")
+		return
+	}
 
-    password := passwordGenerator(length, hasUppercase, hasSymbols, hasNumbers)
-    fmt.Println("Password Length:", length)
-    fmt.Println("Has Uppercase:", hasUppercase)
-    fmt.Println("Has Symbols:", hasSymbols)
-    fmt.Println("Has Numbers:", hasNumbers)
-    fmt.Println("Generated password:", password)
+	var password string
+	switch passwordType {
+	case "random":
+		password = passwordGenerator(length, hasUppercase, hasSymbols, hasNumbers)
+	case "alphanumeric":
+		password = passwordGenerator(length, hasUppercase, hasSymbols, hasNumbers)
+	case "pin":
+		password = passwordGenerator(length, hasUppercase, hasSymbols, hasNumbers)
+	default:
+		fmt.Println("Invalid password type")
+		os.Exit(1)
+	}
+
+	fmt.Println("Password Type:", passwordType)
+	fmt.Println("Password Length:", length)
+	fmt.Println("Has Uppercase:", hasUppercase)
+	fmt.Println("Has Symbols:", hasSymbols)
+	fmt.Println("Has Numbers:", hasNumbers)
+	fmt.Println("Generated password:", password) 
 }
