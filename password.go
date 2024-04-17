@@ -1,11 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
+	"math/big"
 	"os"
 	"strconv"
-	"time"
 )
 const (
 	lowerCaseLetters = "abcdefghijklmnopqrstuvwxyz"
@@ -13,6 +13,14 @@ const (
 	numbers          = "0123456789"
 	symbols          = "!@#$%^&*()-_=+,.?/:;{}[]`~"
 )
+
+func secureRandom(max *big.Int) int {
+	n, err := rand.Int(rand.Reader, max)
+	if err != nil {
+		panic(err)
+	}
+	return int(n.Int64())
+}
 
 func passwordGenerator(length int, withUpperCase, withSymbols, withNumbers bool) string {
 	var characters string
@@ -30,11 +38,11 @@ func passwordGenerator(length int, withUpperCase, withSymbols, withNumbers bool)
 		characters += numbers
 	}
 
-   rand.Seed(time.Now().UnixNano())
-   password:= make([]byte,length)
-   for i := range password {
-    password[i] = characters[rand.Intn(len(characters))]
-   }
+    characterLength := big.NewInt(int64(len(characters)))
+    password:= make([]byte,length)
+    for i := range password {
+        password[i] = characters[secureRandom(characterLength)]
+    }
 	return string(password)
 }
 
