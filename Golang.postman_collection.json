@@ -1,0 +1,29 @@
+{
+	"info": {
+		"_postman_id": "8d8a3c47-a62b-4e78-9d72-4f183b965a88",
+		"name": "Golang",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "31716243",
+		"_collection_link": "https://red-flare-657559.postman.co/workspace/My-workspace~e7bd1411-798f-40cb-8717-ecd51f7f6ffd/collection/31716243-8d8a3c47-a62b-4e78-9d72-4f183b965a88?action=share&source=collection_link&creator=31716243"
+	},
+	"item": [
+		{
+			"name": "Exercise2 - Get password",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"random\",\r\n    \"length\": 16,\r\n    \"hasUppercase\": true,\r\n    \"hasSymbols\": true,\r\n    \"hasNumbers\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8080/generate-password"
+			},
+			"response": []
+		}
+	]
+}
